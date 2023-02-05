@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>ERC-721 Metamask Test</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    </head>
+    <body>
+        <div>
+            <p>내 지갑 주소: <span id="wallet-address"></span></p>
+            <p>발행한 토큰 수: <span id="current-count"></span></p>
+            <div>
+                <input type="text" id="tokenURIInput" style="width: 500px;">
+                <button id="mint">Mint</button>
+            </div>
+            
+            <div id="tokenURIList"></div>
+        </div>
+
+        <script src="./ABI721.json" type="text/javascript"></script>
+        <script type="text/javascript">
+            // Connect Metamask to our site. Get the user's address
+            let account = null;
+            let contract = null;
+
+            const ABI = ABI721;
+            const ADDRESS = "0x16a7d4f76197d5b77048189a4e31ae86f58a5eaa";
+            (async () => {
+                if (window.ethereum) {
+                    await window.ethereum.send('eth_requestAccounts');
+                    window.web3 = new Web3(window.ethereum);
+
+                    let accounts = await web3.eth.getAccounts();
+                    account = accounts[0];
+                    document.getElementById('wallet-address').textContent = account;
+
+                    contract = new web3.eth.Contract(ABI, ADDRESS);
+                    console.log(contract.methods);
+
+                    let counter = await contract.methods.balanceOf(account).call();
+                    document.getElementById('current-count').textContent = counter;
+
+                    let defaultPinataURI = 'https://gateway.pinata.cloud/ipfs/';
+                    for(let i = 1; i <= counter; i++) {
+                        const uri = await contract.methods.tokenURI(i).call();
+                        const tokenURIHtml = `
+                            <p>TOKEN ID : ${i}</p>
+                            <p>TOKEN URI : ${uri}</p>
+                        `;
+                        const tokenURIDiv = document.createElement('div');
+                        tokenURIDiv.innerHTML = tokenURIHtml;
+                        document.getElementById('tokenURIList').appendChild(tokenURIDiv);
+                    }
+
+                    const defaultTokenURI = 'ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi';
+                    document.getElementById('tokenURIInput').value = defaultTokenURI;
+                    document.getElementById('mint').onclick = async () => {
+                        const tokenURIInput = document.getElementById('tokenURIInput').value;
+                        const tokenURI = tokenURIInput || defaultTokenURI;
+                        contract.methods.create(account, tokenURI).send({ from: account, value: "" });
+                    }
+
+                    // document.getElementById('mint').onclick = async () => {
+                    //     let token_amount = await contract.methods.cost().call();
+                    //     console.log(token_amount);
+                    //     contract.methods.mint(account, 1).send({ from: account, value: String(token_amount) });
+                    // }
+
+                    // updateCurrentCount();
+                    // document.getElementById('increase-count').onclick = () => {
+                    //     increaseCurrentCount();
+                    // }
+                }
+            })();
+        </script>
+    </body>
+</html>
