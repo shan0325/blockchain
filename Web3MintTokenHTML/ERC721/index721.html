@@ -11,13 +11,14 @@
     </head>
     <body>
         <div>
+            <p>마지막 블록 번호: <span id="latestBlockNumber"></span></p>
             <p>내 지갑 주소: <span id="wallet-address"></span></p>
-            <p>발행한 토큰 수: <span id="current-count"></span></p>
             <div>
+                setTokenURI : 
                 <input type="text" id="tokenURIInput" style="width: 500px;">
                 <button id="mint">Mint</button>
             </div>
-            
+            <p>발행한 토큰: <span id="current-count"></span></p>
             <div id="tokenURIList"></div>
         </div>
 
@@ -34,6 +35,9 @@
                     await window.ethereum.send('eth_requestAccounts');
                     window.web3 = new Web3(window.ethereum);
 
+                    // 마지막 블록 번호 셋팅
+                    setLastBlockNumber();
+
                     let accounts = await web3.eth.getAccounts();
                     account = accounts[0];
                     document.getElementById('wallet-address').textContent = account;
@@ -41,23 +45,21 @@
                     contract = new web3.eth.Contract(ABI, ADDRESS);
                     console.log(contract.methods);
 
+                    const defaultTokenURI = 'ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi';
+                    document.getElementById('tokenURIInput').value = defaultTokenURI;
+
                     let counter = await contract.methods.balanceOf(account).call();
                     document.getElementById('current-count').textContent = counter;
 
                     let defaultPinataURI = 'https://gateway.pinata.cloud/ipfs/';
                     for(let i = 1; i <= counter; i++) {
                         const uri = await contract.methods.tokenURI(i).call();
-                        const tokenURIHtml = `
-                            <p>TOKEN ID : ${i}</p>
-                            <p>TOKEN URI : ${uri}</p>
-                        `;
+                        const tokenURIHtml = `<p>TokenID : ${i}, TokenURI : ${uri}</p>`;
                         const tokenURIDiv = document.createElement('div');
                         tokenURIDiv.innerHTML = tokenURIHtml;
                         document.getElementById('tokenURIList').appendChild(tokenURIDiv);
                     }
-
-                    const defaultTokenURI = 'ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi';
-                    document.getElementById('tokenURIInput').value = defaultTokenURI;
+                    
                     document.getElementById('mint').onclick = async () => {
                         const tokenURIInput = document.getElementById('tokenURIInput').value;
                         const tokenURI = tokenURIInput || defaultTokenURI;
@@ -76,6 +78,16 @@
                     // }
                 }
             })();
+
+            function setLastBlockNumber() {
+                setInterval(function() {
+                    web3.eth.getBlockNumber(function(err, rtn) {
+                        if(err) return console.log(err);
+                        var latestBlockNumber = rtn;
+                        document.getElementById('latestBlockNumber').textContent = latestBlockNumber;
+                    });
+                }, 1000);
+            }
         </script>
     </body>
 </html>
