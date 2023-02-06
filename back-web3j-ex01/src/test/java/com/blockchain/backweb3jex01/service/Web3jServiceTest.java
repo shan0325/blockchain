@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.web3j.protocol.core.methods.response.EthAccounts;
 import org.web3j.protocol.core.methods.response.EthBlockNumber;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 
 import javax.annotation.Resource;
@@ -18,11 +19,6 @@ class Web3jServiceTest {
 
     @Resource(name = "web3jService")
     private Web3jService web3jService;
-
-    @Test
-    public void balanceOf() {
-        web3jService.balanceOf();
-    }
 
     @Test
     public void getBlockNumber() throws ExecutionException, InterruptedException {
@@ -48,6 +44,13 @@ class Web3jServiceTest {
         EthGetTransactionCount ethGetTransactionCount = web3jService.getTransactionCount();
         BigInteger transactionCount = ethGetTransactionCount.getTransactionCount();
         System.out.println("transactionCount = " + transactionCount);
+    }
+
+    @Test
+    public void getEthBalance() throws ExecutionException, InterruptedException {
+        EthGetBalance ethGetBalance = web3jService.getEthBalance();
+        BigInteger balance = ethGetBalance.getBalance();
+        System.out.println("balance = " + balance);
     }
 
 

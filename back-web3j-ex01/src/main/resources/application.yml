@@ -1,1 +1,5 @@
+metamask:
+  WALLET_ADDRESS: "XXX"
 
+infura:
+  API_URL: "https://goerli.infura.io/v3/XXX"
