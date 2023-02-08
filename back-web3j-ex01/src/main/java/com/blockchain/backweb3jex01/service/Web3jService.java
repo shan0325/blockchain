@@ -1,21 +1,15 @@
 package com.blockchain.backweb3jex01.service;
 
+import com.blockchain.backweb3jex01.contract.NFT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.Request;
-import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.*;
-import org.web3j.protocol.http.HttpService;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.concurrent.ExecutionException;
 
 @RequiredArgsConstructor
@@ -23,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 public class Web3jService {
 
     private final Web3j web3j;
+    private final NFT nft;
 
     @Value("${metamask.WALLET_ADDRESS}")
     private String WALLET_ADDRESS;
@@ -56,9 +51,19 @@ public class Web3jService {
                 .get();
     }
 
-    public void getContractName() {
-        Function function = new Function("name", Collections.emptyList(), Arrays.asList(new TypeReference<Uint256>() {}));
+    public String getContractName() throws Exception {
+        return nft.name().send();
+    }
 
-        
+    public BigInteger currentCount() throws Exception {
+        return nft.balanceOf(WALLET_ADDRESS).send();
+    }
+
+    public TransactionReceipt nftCreate() throws ExecutionException, InterruptedException {
+        System.out.println("nftCreate start : " + LocalDateTime.now());
+        TransactionReceipt transactionReceipt = nft.create(WALLET_ADDRESS, "ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi").sendAsync().get();
+        System.out.println("nftCreate end : " + LocalDateTime.now());
+
+        return transactionReceipt;
     }
 }

@@ -1,5 +1,7 @@
 metamask:
   WALLET_ADDRESS: "XXX"
+  CONTRACT_ADDRESS: "XXX"
+  PRIVATE_KEY: "XXX"
 
 infura:
   API_URL: "https://goerli.infura.io/v3/XXX"

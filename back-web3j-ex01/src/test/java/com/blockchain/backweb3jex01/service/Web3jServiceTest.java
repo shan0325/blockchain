@@ -3,10 +3,7 @@ package com.blockchain.backweb3jex01.service;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.web3j.protocol.core.methods.response.EthAccounts;
-import org.web3j.protocol.core.methods.response.EthBlockNumber;
-import org.web3j.protocol.core.methods.response.EthGetBalance;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.*;
 
 import javax.annotation.Resource;
 import java.math.BigInteger;
@@ -53,6 +50,22 @@ class Web3jServiceTest {
         System.out.println("balance = " + balance);
     }
 
+    @Test
+    public void getContractName() throws Exception {
+        String contractName = web3jService.getContractName();
+        System.out.println("contractName = " + contractName);
+    }
 
+    @Test
+    public void currentCount() throws Exception {
+        BigInteger currentCount = web3jService.currentCount();
+        System.out.println("currentCount = " + currentCount);
+    }
+
+    @Test
+    public void nftCreate() throws ExecutionException, InterruptedException {
+        TransactionReceipt transactionReceipt = web3jService.nftCreate();
+        System.out.println("transactionReceipt = " + transactionReceipt);
+    }
 
 }
