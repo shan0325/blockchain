@@ -4,16 +4,24 @@ import com.blockchain.backweb3jex01.contract.NFT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.TypeEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Event;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.*;
+import org.web3j.tx.Contract;
 import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 @RequiredArgsConstructor
@@ -90,5 +98,41 @@ public class Web3jService {
         System.out.println("send1.getRawResponse() = " + send1.getRawResponse());
         System.out.println("send1.getLogs() = " + send1.getLogs());
         return web3j.ethGetFilterChanges(filterId).send();
+    }
+
+    private EthFilter getEthFilter() throws Exception {
+        EthBlockNumber blockNumber = getBlockNumber();
+        EthFilter ethFilter = new EthFilter(DefaultBlockParameter.valueOf(blockNumber.getBlockNumber()), DefaultBlockParameterName.LATEST, CONTRACT_ADDRESS);
+
+        Event event = new Event("Transfer",
+                Arrays.asList(
+                        new TypeReference<Address>(true) {
+                            // from
+                        },
+                        new TypeReference<Address>(true) {
+                        },
+                        new TypeReference<Uint256>(false) {
+                            // amount
+                        }
+                ));
+        String topicData = EventEncoder.encode(event);
+        ethFilter.addSingleTopic(topicData);
+        ethFilter.addNullTopic();// filter: event type (topic[0])
+        //ethFilter.addOptionalTopics("0x"+ TypeEncoder.encode(new Address("")));
+
+        return ethFilter;
+    }
+
+    public void transferEventFlowable() throws Exception {
+        web3j.ethLogFlowable(getEthFilter())
+                .subscribe(log -> {
+                    System.out.println("log = " + log);
+                    String data = log.getData();
+                    System.out.println("data = " + data);
+                    String address = log.getAddress();
+                    System.out.println("address = " + address);
+                });
+
+        Thread.sleep(10000000);
     }
 }

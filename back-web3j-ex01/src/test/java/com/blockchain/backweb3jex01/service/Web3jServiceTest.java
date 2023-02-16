@@ -74,4 +74,9 @@ class Web3jServiceTest {
         System.out.println("ethLog = " + ethLog);
     }
 
+    @Test
+    public void transferEventFlowable() throws Exception {
+        web3jService.transferEventFlowable();
+    }
+
 }
