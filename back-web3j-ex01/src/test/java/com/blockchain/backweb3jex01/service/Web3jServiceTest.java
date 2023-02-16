@@ -68,4 +68,10 @@ class Web3jServiceTest {
         System.out.println("transactionReceipt = " + transactionReceipt);
     }
 
+    @Test
+    public void web3jEthNewFilter() throws Exception {
+        EthLog ethLog = web3jService.web3jEthNewFilter();
+        System.out.println("ethLog = " + ethLog);
+    }
+
 }

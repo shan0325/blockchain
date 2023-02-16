@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.*;
+import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -21,6 +25,9 @@ public class Web3jService {
 
     @Value("${metamask.WALLET_ADDRESS}")
     private String WALLET_ADDRESS;
+
+    @Value("${metamask.CONTRACT_ADDRESS}")
+    private String CONTRACT_ADDRESS;
 
 
     // 현재 블록 번호
@@ -65,5 +72,23 @@ public class Web3jService {
         System.out.println("nftCreate end : " + LocalDateTime.now());
 
         return transactionReceipt;
+    }
+
+    public EthLog web3jEthNewFilter() throws Exception {
+        EthBlockNumber blockNumber = getBlockNumber();
+        System.out.println("blockNumber.getBlockNumber() = " + blockNumber.getBlockNumber());
+
+        EthFilter filter = new EthFilter(DefaultBlockParameter.valueOf(blockNumber.getBlockNumber()), DefaultBlockParameterName.LATEST, CONTRACT_ADDRESS);
+
+        org.web3j.protocol.core.methods.response.EthFilter send = web3j.ethNewFilter(filter).send();
+        System.out.println("getFilterId = " + send.getFilterId());
+        System.out.println("getId = " + send.getId());
+        System.out.println("getJsonrpc = " + send.getJsonrpc());
+
+        BigInteger filterId = BigInteger.valueOf(send.getId());
+        EthLog send1 = web3j.ethGetFilterChanges(filterId).send();
+        System.out.println("send1.getRawResponse() = " + send1.getRawResponse());
+        System.out.println("send1.getLogs() = " + send1.getLogs());
+        return web3j.ethGetFilterChanges(filterId).send();
     }
 }
