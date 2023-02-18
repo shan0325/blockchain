@@ -69,12 +69,6 @@ class Web3jServiceTest {
     }
 
     @Test
-    public void web3jEthNewFilter() throws Exception {
-        EthLog ethLog = web3jService.web3jEthNewFilter();
-        System.out.println("ethLog = " + ethLog);
-    }
-
-    @Test
     public void transferEventFlowable() throws Exception {
         web3jService.transferEventFlowable();
     }

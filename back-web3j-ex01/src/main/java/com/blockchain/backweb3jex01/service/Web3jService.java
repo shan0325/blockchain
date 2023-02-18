@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.TypeEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
@@ -13,11 +12,8 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.*;
-import org.web3j.tx.Contract;
-import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -43,7 +39,7 @@ public class Web3jService {
         return web3j.ethBlockNumber().sendAsync().get();
     }
 
-    // 계정
+    // 지정된 주소의 계정
     public EthAccounts getEthAccounts() throws ExecutionException, InterruptedException {
         return web3j.ethAccounts().sendAsync().get();
     }
@@ -66,14 +62,17 @@ public class Web3jService {
                 .get();
     }
 
+    // 스마트컨트랙트명 가져오기
     public String getContractName() throws Exception {
         return nft.name().send();
     }
 
+    // nft 발행 건수
     public BigInteger currentCount() throws Exception {
         return nft.balanceOf(WALLET_ADDRESS).send();
     }
 
+    // nft 발행
     public TransactionReceipt nftCreate() throws ExecutionException, InterruptedException {
         System.out.println("nftCreate start : " + LocalDateTime.now());
         TransactionReceipt transactionReceipt = nft.create(WALLET_ADDRESS, "ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi").sendAsync().get();
@@ -82,24 +81,21 @@ public class Web3jService {
         return transactionReceipt;
     }
 
-    public EthLog web3jEthNewFilter() throws Exception {
-        EthBlockNumber blockNumber = getBlockNumber();
-        System.out.println("blockNumber.getBlockNumber() = " + blockNumber.getBlockNumber());
+    // nft 거래건이 있을경우 subscribe에 등록한 함수 실행
+    public void transferEventFlowable() throws Exception {
+        web3j.ethLogFlowable(getEthFilter())
+                .subscribe(log -> {
+                    System.out.println("log = " + log);
+                    String data = log.getData();
+                    System.out.println("data = " + data);
+                    String address = log.getAddress();
+                    System.out.println("address = " + address);
+                });
 
-        EthFilter filter = new EthFilter(DefaultBlockParameter.valueOf(blockNumber.getBlockNumber()), DefaultBlockParameterName.LATEST, CONTRACT_ADDRESS);
-
-        org.web3j.protocol.core.methods.response.EthFilter send = web3j.ethNewFilter(filter).send();
-        System.out.println("getFilterId = " + send.getFilterId());
-        System.out.println("getId = " + send.getId());
-        System.out.println("getJsonrpc = " + send.getJsonrpc());
-
-        BigInteger filterId = BigInteger.valueOf(send.getId());
-        EthLog send1 = web3j.ethGetFilterChanges(filterId).send();
-        System.out.println("send1.getRawResponse() = " + send1.getRawResponse());
-        System.out.println("send1.getLogs() = " + send1.getLogs());
-        return web3j.ethGetFilterChanges(filterId).send();
+        Thread.sleep(10000000);
     }
 
+    // 이더리움 블록체인에서 발생하는 이벤트를 필터링하는데 사용(여기에서는 Transfer(거래)만 허용)
     private EthFilter getEthFilter() throws Exception {
         EthBlockNumber blockNumber = getBlockNumber();
         EthFilter ethFilter = new EthFilter(DefaultBlockParameter.valueOf(blockNumber.getBlockNumber()), DefaultBlockParameterName.LATEST, CONTRACT_ADDRESS);
@@ -121,18 +117,5 @@ public class Web3jService {
         //ethFilter.addOptionalTopics("0x"+ TypeEncoder.encode(new Address("")));
 
         return ethFilter;
-    }
-
-    public void transferEventFlowable() throws Exception {
-        web3j.ethLogFlowable(getEthFilter())
-                .subscribe(log -> {
-                    System.out.println("log = " + log);
-                    String data = log.getData();
-                    System.out.println("data = " + data);
-                    String address = log.getAddress();
-                    System.out.println("address = " + address);
-                });
-
-        Thread.sleep(10000000);
     }
 }
