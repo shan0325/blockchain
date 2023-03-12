@@ -2,6 +2,7 @@ package com.blockchain.backweb3jex01.service;
 
 import com.blockchain.backweb3jex01.contract.NFT;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.EventEncoder;
@@ -16,10 +17,10 @@ import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.*;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service("web3jService")
 public class Web3jService {
@@ -54,7 +55,7 @@ public class Web3jService {
         return result;
     }
 
-    // 계정 잔액
+    // 계정 잔액 조회
     public EthGetBalance getEthBalance() throws ExecutionException, InterruptedException {
         return web3j.ethGetBalance(WALLET_ADDRESS,
                         DefaultBlockParameter.valueOf("latest"))
@@ -73,23 +74,21 @@ public class Web3jService {
     }
 
     // nft 발행
-    public TransactionReceipt nftCreate() throws ExecutionException, InterruptedException {
-        System.out.println("nftCreate start : " + LocalDateTime.now());
-        TransactionReceipt transactionReceipt = nft.create(WALLET_ADDRESS, "ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi").sendAsync().get();
-        System.out.println("nftCreate end : " + LocalDateTime.now());
-
-        return transactionReceipt;
+    public TransactionReceipt nftCreate() throws Exception {
+        return nft.create(WALLET_ADDRESS, "ipfs://QmNZLXLk8nWG4PMdcCWAGpgW12hAhiV375YeFpaCLisfBi")
+                .sendAsync()
+                .get();
     }
 
-    // nft 거래건이 있을경우 subscribe에 등록한 함수 실행
+    // nft 거래가 발생할 경우 subscribe에 등록한 함수가 실행됨
     public void transferEventFlowable() throws Exception {
         web3j.ethLogFlowable(getEthFilter())
-                .subscribe(log -> {
-                    System.out.println("log = " + log);
-                    String data = log.getData();
-                    System.out.println("data = " + data);
-                    String address = log.getAddress();
-                    System.out.println("address = " + address);
+                .subscribe(logData -> {
+                    log.info("logData : {}", logData);
+                    String data = logData.getData();
+                    log.info("data : {}", data);
+                    String address = logData.getAddress();
+                    log.info("address : {}", address);
                 });
 
         Thread.sleep(10000000);

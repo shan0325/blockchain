@@ -8,6 +8,10 @@ import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.ClientTransactionManager;
+import org.web3j.tx.Contract;
+import org.web3j.tx.TransactionManager;
+import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
 
@@ -40,6 +44,10 @@ public class Web3jConfig {
 
     @Bean
     public NFT nft() {
-        return NFT.load(CONTRACT_ADDRESS, web3j(), credentials(), new DefaultGasProvider());
+        BigInteger gasPrice = Contract.GAS_PRICE;
+        BigInteger gasLimit = Contract.GAS_LIMIT;
+        StaticGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
+
+        return NFT.load(CONTRACT_ADDRESS, web3j(), credentials(), gasProvider);
     }
 }

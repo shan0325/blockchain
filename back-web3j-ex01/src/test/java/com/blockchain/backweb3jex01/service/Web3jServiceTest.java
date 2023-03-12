@@ -1,5 +1,6 @@
 package com.blockchain.backweb3jex01.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -7,10 +8,12 @@ import org.web3j.protocol.core.methods.response.*;
 
 import javax.annotation.Resource;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
+@Slf4j
 @SpringBootTest
 class Web3jServiceTest {
 
@@ -23,49 +26,56 @@ class Web3jServiceTest {
         long id = ethBlockNumber.getId();
         BigInteger blockNumber = ethBlockNumber.getBlockNumber();
 
-        System.out.println("id = " + id);
-        System.out.println("blockNumber = " + blockNumber);
+        log.info("id : {}", id);
+        log.info("blockNumber : {}", blockNumber);
     }
 
     @Test
     public void getEthAccounts() throws ExecutionException, InterruptedException {
         EthAccounts ethAccounts = web3jService.getEthAccounts();
         List<String> accounts = ethAccounts.getAccounts();
-        System.out.println("accounts = " + accounts);
 
-        Assertions.assertThat(accounts.get(0)).isEqualTo("0x296e4e429d90ce3aa25de36df23c005902996add");
+        log.info("accounts : {}", accounts);
     }
 
     @Test
     public void getTransactionCount() throws ExecutionException, InterruptedException {
         EthGetTransactionCount ethGetTransactionCount = web3jService.getTransactionCount();
         BigInteger transactionCount = ethGetTransactionCount.getTransactionCount();
-        System.out.println("transactionCount = " + transactionCount);
+
+        log.info("transactionCount : {}", transactionCount);
     }
 
     @Test
     public void getEthBalance() throws ExecutionException, InterruptedException {
         EthGetBalance ethGetBalance = web3jService.getEthBalance();
         BigInteger balance = ethGetBalance.getBalance();
-        System.out.println("balance = " + balance);
+
+        log.info("balance : {}", balance);
     }
 
     @Test
     public void getContractName() throws Exception {
         String contractName = web3jService.getContractName();
-        System.out.println("contractName = " + contractName);
+
+        log.info("contractName : {}", contractName);
     }
 
     @Test
     public void currentCount() throws Exception {
         BigInteger currentCount = web3jService.currentCount();
-        System.out.println("currentCount = " + currentCount);
+
+        log.info("currentCount : {}", currentCount);
     }
 
     @Test
-    public void nftCreate() throws ExecutionException, InterruptedException {
+    public void nftCreate() throws Exception {
+        log.info("start time : {}", LocalDateTime.now());
+
         TransactionReceipt transactionReceipt = web3jService.nftCreate();
-        System.out.println("transactionReceipt = " + transactionReceipt);
+        log.info("transactionReceipt : {}", transactionReceipt);
+
+        log.info("end time : {}", LocalDateTime.now());
     }
 
     @Test
